@@ -48,6 +48,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({
         router.push(`/${params.storeId}/orders`);
         router.refresh();
       } catch (error) {
+        console.error(error)
         toast.error("Something went wrong.")
       } finally {
         setLoading(false)

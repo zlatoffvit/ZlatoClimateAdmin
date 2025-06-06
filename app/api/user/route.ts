@@ -48,6 +48,7 @@ export async function POST(req: Request) {
         password: hashedPassword
       }
     });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password: newUserPassword, ...rest } = newUser;
 
     return NextResponse.json({ user: rest, message: "User created successfully" }, { status: 201 });
@@ -56,6 +57,7 @@ export async function POST(req: Request) {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function GET (req: Request) {
   const session = await auth();
 

@@ -137,7 +137,6 @@ export async function GET(
 ) {
   const { storeId } = await params;
   try {
-    console.log({req})
     const { searchParams } = new URL(req.url);
     const categoryId = searchParams.get("categoryId") || undefined;
     const makeId = searchParams.get("makeId") || undefined;

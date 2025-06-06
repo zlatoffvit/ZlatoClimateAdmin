@@ -52,6 +52,7 @@ const CellAction: React.FC<CellActionsProps> = ({
         router.refresh();
         toast.success("Order deleted.")
       } catch (error) {
+        console.error(error)
         toast.error("Something went wrong.")
       } finally {
         setLoading(false)
