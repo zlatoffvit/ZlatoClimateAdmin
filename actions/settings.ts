@@ -52,7 +52,7 @@ export const settings = async (
 
   if (values.password && values.newPassword && dbUser.password) {
     const passwordMatch = await bcrypt.compare(
-      values.password,
+      values.password as string,
       dbUser.password
     );
 
@@ -61,7 +61,7 @@ export const settings = async (
     }
 
     const hashedPassword = await bcrypt.hash(
-      values.newPassword,
+      values.newPassword as string,
       10,
     );
     values.password = hashedPassword;
