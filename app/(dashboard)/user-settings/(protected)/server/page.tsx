@@ -1,15 +1,13 @@
 import initTranslations from "@/lib/i18n/i18n";
 import { auth } from "@/auth";
 import Heading from "@/components/ui/Heading";
+import { getCurrentLocale } from "@/actions/getCurrentLocale";
 
 
-const ServerPage = async ({
-  params: { locale }
-}: {
-  params: { locale: string}
-}) => {
+const ServerPage = async () => {
+  const currentLocale = await getCurrentLocale() || "ru";
   const { t } = await initTranslations({
-    locale,
+    locale: currentLocale,
     namespaces: ['common']
   })
   const session = await auth();
