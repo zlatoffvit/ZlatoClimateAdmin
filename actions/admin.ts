@@ -2,7 +2,7 @@
 
 import initTranslations from "@/lib/i18n/i18n";
 import { currentRole } from "@/lib/auth";
-import { UserRole } from "@prisma/client";
+import { UserRole } from "@/lib/utils";
 
 
 export const admin = async (currentLocale: string) => {

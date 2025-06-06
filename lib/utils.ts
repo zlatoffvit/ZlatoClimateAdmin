@@ -41,3 +41,8 @@ export const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-type, Authorization",
   "Accept-Language": "en-US"
 };
+
+export enum UserRole {
+  ADMIN="ADMIN",
+  USER="USER"
+}
