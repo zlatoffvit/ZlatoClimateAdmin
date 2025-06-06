@@ -40,7 +40,7 @@ export const settings = async (
       return { error: "Email already in use!" }
     }
 
-    const verificationToken = await generateVerificationToken(values.email, user.id);
+    const verificationToken = await generateVerificationToken(values.email as string, user.id);
 
     await sendVerificationEmail(
       verificationToken.email,
