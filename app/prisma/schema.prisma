@@ -1,0 +1,220 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider     = "postgresql"
+  url          = env("DATABASE_URL")
+  directUrl    = env("DIRECT_URL")
+  relationMode = "prisma"
+}
+
+enum UserRole {
+  ADMIN
+  USER
+}
+
+model User {
+  id                    String                 @id @default(cuid())
+  name                  String?
+  email                 String?                @unique
+  emailVerified         DateTime?
+  image                 String?
+  password              String?
+  role                  UserRole               @default(USER)
+  accounts              Account[]
+  isTwoFactorEnabled    Boolean                @default(false)
+  twoFactorConfirmation TwoFactorConfirmation?
+  storesCreated         Store[]                @relation("StoreCreatedByUser")
+  storesUpdated         Store[]                @relation("StoreUpdatedByUser")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model VerificationToken {
+  id      String   @id @default(cuid())
+  email   String
+  userId  String?
+  token   String   @unique
+  expires DateTime
+
+  @@unique([userId, token])
+}
+
+model PaswordResetToken {
+  id      String   @id @default(cuid())
+  email   String
+  token   String   @unique
+  expires DateTime
+
+  @@unique([email, token])
+}
+
+model TwoFactorToken {
+  id      String   @id @default(cuid())
+  email   String
+  token   String   @unique
+  expires DateTime
+
+  @@unique([email, token])
+}
+
+model TwoFactorConfirmation {
+  id String @id @default(cuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId])
+}
+
+model Store {
+  id         String     @id @default(uuid())
+  name       String
+  userId     String
+  categories Category[] @relation("StoreToCategory")
+  makes      Make[]     @relation("StoreToMake")
+  products   Product[]  @relation("StoreToProduct")
+  orders     Order[]    @relation("StoreToOrder")
+  message    Message[]  @relation("StoreToMessage")
+  createdBy  User       @relation("StoreCreatedByUser", fields: [userId], references: [id], map: "createdByUser")
+  updatedBy  User       @relation("StoreUpdatedByUser", fields: [userId], references: [id], map: "updatedByUser")
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  @@index([userId], name: "unique_userId")
+}
+
+model Category {
+  id        String    @id @default(uuid())
+  storeId   String
+  store     Store     @relation("StoreToCategory", fields: [storeId], references: [id])
+  name      String    @unique
+  imageUrl  String
+  products  Product[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([storeId])
+}
+
+model Make {
+  id        String    @id @default(uuid())
+  storeId   String
+  store     Store     @relation("StoreToMake", fields: [storeId], references: [id])
+  name      String
+  products  Product[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([storeId])
+}
+
+model Product {
+  id          String      @id @default(uuid())
+  storeId     String
+  store       Store       @relation("StoreToProduct", fields: [storeId], references: [id])
+  categories  Category[]
+  name        String
+  price       Decimal
+  marking     String
+  power       String
+  isFeatured  Boolean     @default(false)
+  isArchived  Boolean     @default(false)
+  makeId      String
+  make        Make        @relation(fields: [makeId], references: [id])
+  images      Image[]
+  description String
+  orderItems  OrderItem[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([storeId])
+  @@index([makeId])
+}
+
+model Image {
+  id        String   @id @default(uuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url       String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([productId])
+}
+
+model Order {
+  id         String      @id @default(uuid())
+  storeId    String
+  store      Store       @relation("StoreToOrder", fields: [storeId], references: [id])
+  orderItems OrderItem[]
+  isPaid     Boolean     @default(false)
+  totalPrice String
+  name       String      @default("")
+  email      String      @default("")
+  phone      String      @default("")
+  address    String      @default("")
+  status     OrderStatus @default(PENDING)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  @@index([storeId])
+}
+
+model OrderItem {
+  id        String  @id @default(uuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+enum OrderStatus {
+  PENDING
+  APPROVED
+  SHIPPED
+  DELIVERED
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  storeId   String
+  store     Store    @relation("StoreToMessage", fields: [storeId], references: [id])
+  name      String   @default("")
+  email     String   @default("")
+  phone     String   @default("")
+  query     String   @default("")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([storeId])
+}
